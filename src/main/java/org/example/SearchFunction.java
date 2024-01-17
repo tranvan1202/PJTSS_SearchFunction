@@ -9,7 +9,9 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+
 import com.google.common.collect.Lists;
+import org.openqa.selenium.interactions.Actions;
 
 
 public class SearchFunction {
@@ -36,29 +38,28 @@ public class SearchFunction {
         String urlMY = "https://www.samsung.com/my/search/?searchvalue=";
         String urlNZ = "https://www.samsung.com/nz/search/?searchvalue=";
         ArrayList arrayURLs = new ArrayList<String>();
-        arrayURLs.addAll(Arrays.asList(urlVN,urlID,urlSG,urlTH,urlNZ,urlPH,urlMY));
+        arrayURLs.addAll(Arrays.asList(urlSG));
+        //arrayURLs.addAll(Arrays.asList(urlVN, urlID, urlSG, urlTH, urlNZ, urlPH, urlMY));
         ArrayList arrayKeywords = new ArrayList<String>();
-        arrayKeywords.addAll(Arrays.asList("galaxy z flip5","phone"));
+        arrayKeywords.addAll(Arrays.asList("galaxy z flip5", "phone"));
 
         //arrayKeywords.addAll(Arrays.asList("Galaxy E1","Galaxy E2","Galaxy E3","E1","E2","E3","Galaxy S series","new S series","2024 S series","S Pen","Galaxy S","new Galaxy S","2024 galaxy S","Galaxy AI","AI","Eureka"));
 
-        System.out.println("Sub"+ ",PC (Y/N)"+ ",MO (Y/N)"+ ",Keyword" + ",Redirected URL");
-        for (int x =0; x< arrayURLs.size(); x++)
-        {
-            for (int i = 0; i < arrayKeywords.size(); i++)
-            {
+        System.out.println("Sub" + ",PC (Y/N)" + ",MO (Y/N)" + ",Keyword" + ",Redirected URL");
+        for (int x = 0; x < arrayURLs.size(); x++) {
+            for (int i = 0; i < arrayKeywords.size(); i++) {
                 //Giữ cửa sổ hiện tại
                 String winHandleBefore = driver.getWindowHandle();
                 driver.manage().window().maximize();
                 //driver.navigate().to(arrayURLs.get(x)+arrayKeywords.get(i).toString());
 
-                JavascriptExecutor js1 = (JavascriptExecutor)driver;
+                JavascriptExecutor js1 = (JavascriptExecutor) driver;
                 js1.executeScript("window.open()");
                 ArrayList<String> browserTabs = Lists.newArrayList(driver.getWindowHandles());
                 driver.switchTo().window(browserTabs.get(1));
-                driver.get(arrayURLs.get(x)+arrayKeywords.get(i).toString());
+                driver.get(arrayURLs.get(x) + arrayKeywords.get(i).toString());
 
-                String siteCode = (driver.getCurrentUrl().substring(arrayURLs.get(x).toString().indexOf(".com/") + 5)).substring(0,2);
+                String siteCode = (driver.getCurrentUrl().substring(arrayURLs.get(x).toString().indexOf(".com/") + 5)).substring(0, 2);
                 driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
 
                 Boolean isUnpackVideoAppear = driver.findElements(By.id("takeover202401")).size() > 0;
@@ -101,31 +102,41 @@ public class SearchFunction {
                     jse.executeScript("arguments[0].click()", clickAll);
                     Thread.sleep(1000);
                 };
-
-//           String locatorClassPopupText = "/html/body/div/div/div/div/div/div/div/div";
-//           String locatorButtonClosePopupText = "/html/body/div/div/div/div/div/div/button";
-//           Boolean isPopUpTextAppear = driver.findElements(By.xpath(locatorClassPopupText)).size() > 0;
-//           if(isPopUpTextAppear) {
-//               WebElement clickOnClosePopupTextButton = driver.findElement(By.xpath(locatorButtonClosePopupText));
-//               driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
-//               clickOnClosePopupTextButton.click();
-//           };
+                ////////////////////////////////////////////////////////////////////////////////////////////
+                Thread.sleep(1000);
+                String locatorTheFrameOfText = "//iframe[@title='Proactive Prompt']";
+                String locatorClassPopupText = "//div[@class='frame-content']";
+                String locatorButtonClosePopupText = "//button[@class='center-x-y flex-column-container center-x-y e1di9suy2 css-1s0vtz8 e1nedcse0']";
+                Boolean isTheFrameOfTextAppear = driver.findElements(By.xpath(locatorTheFrameOfText)).size() > 0;
+                if (isTheFrameOfTextAppear) {
+                    driver.switchTo().defaultContent();
+                    driver.switchTo().frame(driver.findElement(By.xpath(locatorTheFrameOfText)));
+                    Boolean isPopUpTextAppear = driver.findElements(By.xpath(locatorClassPopupText)).size() > 0;
+                    if (isPopUpTextAppear) {
+                        WebElement clickOnClosePopupTextButton = driver.findElement(By.xpath(locatorButtonClosePopupText));
+                        //driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+                        //Double Click the button
+                        Boolean isTheCloseButtonPopupTextAppear = driver.findElements(By.xpath(locatorButtonClosePopupText)).size() > 0;
+                        if(isTheCloseButtonPopupTextAppear) {
+                            clickOnClosePopupTextButton.click();
+                        }
+                    };
+                }
 
                 String locatorBestMatchSection = "//*[@id=\"all\"]/div[1]/div[1]/section/a";
-
                 Boolean isShowingBestMatch = driver.findElements(By.xpath(locatorBestMatchSection)).size() > 0;
-
                 if (isShowingBestMatch) {
                     WebElement sectionBestMatch = driver.findElement(By.xpath(locatorBestMatchSection));
-                    String redirectedUrl= sectionBestMatch.getAttribute("href");
-                    System.out.println(siteCode.toUpperCase()+ ",Yes" + ",Yes,"+ arrayKeywords.get(i).toString() +"," + redirectedUrl);
+                    String redirectedUrl = sectionBestMatch.getAttribute("href");
+                    System.out.println(siteCode.toUpperCase() + ",Yes" + ",Yes," + arrayKeywords.get(i).toString() + "," + redirectedUrl);
                     Thread.sleep(1000);
-                } else System.out.println(siteCode.toUpperCase()+ ",No" + ",No,"+ arrayKeywords.get(i).toString()+ ",Not Available");
+                } else
+                    System.out.println(siteCode.toUpperCase() + ",No" + ",No," + arrayKeywords.get(i).toString() + ",Not Available");
 
                 //Chụp ảnh
                 TakeScreenshot takeScreenshot = new TakeScreenshot();
                 Thread.sleep(1500);
-                String pathNameMOSiteCode = "D:\\Auto\\Screenshot\\" + siteCode.toUpperCase() +"/" + siteCode.toUpperCase() + "_" + arrayKeywords.get(i).toString() + "_MO.png";
+                String pathNameMOSiteCode = "D:\\Auto\\Screenshot\\" + siteCode.toUpperCase() + "/" + siteCode.toUpperCase() + "_" + arrayKeywords.get(i).toString() + "_MO.png";
                 String pathNamePCSiteCode = "D:\\Auto\\Screenshot\\" + siteCode.toUpperCase() + "/" + siteCode.toUpperCase() + "_" + arrayKeywords.get(i).toString() + "_PC.png";
 
                 takeScreenshot.takeSnapShot(this.driver, pathNamePCSiteCode);
@@ -138,7 +149,6 @@ public class SearchFunction {
                 takeScreenshot.takeSnapShot(this.driver, pathNameMOSiteCode);
                 driver.manage().window().maximize();
                 js.executeScript("window.scrollBy(0,-100)", "");
-
 
                 //Đóng tab hiện tại
                 driver.close();
